@@ -201,14 +201,19 @@ function normalizeNumber(raw) {
   return null;
 }
 
-function showResult(finalNumber) {
+function showResult(finalNumber, digits) {
   const result = document.getElementById("result");
 
+  // Invalid number
   if (!finalNumber) {
-    result.innerHTML = "<span class='error'>Enter number is not correct..!</span>";
+    result.innerHTML = `
+      <span class="error">Enter number is not correct..!</span><br>
+      <small>Detected number: <b>${digits || "N/A"}</b></small>
+    `;
     return;
   }
 
+  // Valid number
   const link = `https://wa.me/${finalNumber}`;
   result.innerHTML = `
     ✅ WhatsApp Link:<br>
@@ -216,26 +221,35 @@ function showResult(finalNumber) {
   `;
 }
 
+
 function processManual() {
   const value = document.getElementById("manualInput").value;
-  showResult(normalizeNumber(value));
+  const digits = value.replace(/\D/g, "");
+  const finalNumber = normalizeNumber(value);
+
+  showResult(finalNumber, digits);
 }
+
 
 function scanImage(input) {
   const file = input.files[0];
   if (!file) return;
 
   const result = document.getElementById("result");
-  result.innerHTML = "<span class='loading'>📷 Scanning image…</span>";
+  result.innerHTML = "📷 Scanning image…";
 
   Tesseract.recognize(file, "eng")
     .then(({ data: { text } }) => {
-      showResult(normalizeNumber(text));
+      const digits = text.replace(/\D/g, "");
+      const finalNumber = normalizeNumber(text);
+
+      showResult(finalNumber, digits);
     })
     .catch(() => {
       result.innerHTML = "<span class='error'>Scan failed</span>";
     });
 }
+
 </script>
 
 </body>
