@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>WhatsApp Number Scanner</title>
 
+<!-- OCR -->
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
 
 <style>
@@ -13,20 +15,20 @@
 
   body {
     margin: 0;
+    min-height: 100vh;
     background: #f4f6f8;
     font-family: "Segoe UI", Arial, sans-serif;
     display: flex;
-    justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    justify-content: center;
   }
 
   .card {
     width: 440px;
-    background: #fff;
+    background: #ffffff;
     padding: 24px;
-    border-radius: 10px;
-    box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+    border-radius: 12px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.12);
   }
 
   .header {
@@ -40,7 +42,7 @@
   }
 
   .header p {
-    margin: 6px 0 0;
+    margin-top: 6px;
     font-size: 13px;
     color: #666;
   }
@@ -49,17 +51,25 @@
     margin-bottom: 18px;
   }
 
+  label {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: block;
+  }
+
   .upload-box {
+    height: 120px;
     border: 2px dashed #cfd6dc;
     border-radius: 8px;
-    height: 110px;
+    background: #fafafa;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    color: #444;
     font-size: 14px;
-    background: #fafafa;
+    color: #444;
+    cursor: pointer;
+    text-align: center;
   }
 
   .upload-box:hover {
@@ -80,13 +90,6 @@
     border-radius: 4px;
   }
 
-  label {
-    font-size: 14px;
-    font-weight: 600;
-    display: block;
-    margin-bottom: 6px;
-  }
-
   input[type="text"] {
     width: 100%;
     padding: 10px;
@@ -97,13 +100,13 @@
 
   button {
     width: 100%;
-    padding: 11px;
-    background: #007e5a;
-    border: none;
-    color: #fff;
+    padding: 12px;
     font-size: 15px;
     font-weight: 600;
     border-radius: 6px;
+    border: none;
+    background: #007e5a;
+    color: white;
     cursor: pointer;
   }
 
@@ -126,6 +129,10 @@
     font-weight: 600;
     word-break: break-all;
   }
+
+  .loading {
+    color: #555;
+  }
 </style>
 </head>
 
@@ -138,23 +145,34 @@
     <p>Extract phone numbers from images and create WhatsApp links</p>
   </div>
 
+  <!-- Camera / Image Upload -->
   <div class="section">
-    <label>Upload image</label>
+    <label>Scan using camera</label>
     <label class="upload-box">
-      Click to upload or drag an image
-      <input type="file" accept="image/*" onchange="scanImage(this)">
+      Tap to open camera or upload image
+      <input
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onchange="scanImage(this)"
+      />
     </label>
   </div>
 
   <div class="section">
     <div class="info-box">
-      Upload an image containing a phone number. The app will extract the number and create a WhatsApp link.
+      Upload or capture an image containing a phone number. The app will scan and create a WhatsApp link.
     </div>
   </div>
 
+  <!-- Manual Entry -->
   <div class="section">
-    <label>Or enter number manually:</label>
-    <input type="text" id="manualInput" placeholder="Enter phone number (e.g., 9876543210)">
+    <label>Or enter number manually</label>
+    <input
+      type="text"
+      id="manualInput"
+      placeholder="Enter phone number (e.g., 9876543210)"
+    />
   </div>
 
   <button onclick="processManual()">Process Number</button>
@@ -166,23 +184,31 @@
 <script>
 function normalizeNumber(raw) {
   const digits = raw.replace(/\D/g, "");
+
   if (digits.length === 10) return "91" + digits;
   if (digits.length === 12) return digits;
+
   return null;
 }
 
-function showResult(link) {
+function showResult(finalNumber) {
   const result = document.getElementById("result");
-  if (!link) {
+
+  if (!finalNumber) {
     result.innerHTML = "<span class='error'>Number is not correct</span>";
     return;
   }
-  result.innerHTML = `WhatsApp Link:<br><a href="https://wa.me/${link}" target="_blank">https://wa.me/${link}</a>`;
+
+  const link = `https://wa.me/${finalNumber}`;
+  result.innerHTML = `
+    ✅ WhatsApp Link:<br>
+    <a href="${link}" target="_blank">${link}</a>
+  `;
 }
 
 function processManual() {
-  const input = document.getElementById("manualInput").value;
-  showResult(normalizeNumber(input));
+  const value = document.getElementById("manualInput").value;
+  showResult(normalizeNumber(value));
 }
 
 function scanImage(input) {
@@ -190,11 +216,15 @@ function scanImage(input) {
   if (!file) return;
 
   const result = document.getElementById("result");
-  result.innerHTML = "Scanning image…";
+  result.innerHTML = "<span class='loading'>📷 Scanning image…</span>";
 
   Tesseract.recognize(file, "eng")
-    .then(({ data: { text } }) => showResult(normalizeNumber(text)))
-    .catch(() => result.innerHTML = "<span class='error'>Scan failed</span>");
+    .then(({ data: { text } }) => {
+      showResult(normalizeNumber(text));
+    })
+    .catch(() => {
+      result.innerHTML = "<span class='error'>Scan failed</span>";
+    });
 }
 </script>
 
