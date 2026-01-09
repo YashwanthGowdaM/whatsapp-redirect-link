@@ -1,556 +1,202 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp Number Scanner</title>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-    <style>
-        :root {
-            --color-primary: #008069;
-            --color-primary-hover: #006b5a;
-            --color-error: #d32f2f;
-            --color-success: #2e7d32;
-            --color-border: #e0e0e0;
-            --color-text: #202c33;
-            --color-text-secondary: #667781;
-            --color-bg: #ffffff;
-            --color-bg-light: #f5f5f5;
-        }
+<meta charset="UTF-8">
+<title>WhatsApp Number Scanner</title>
 
-        * {
-            box-sizing: border-box;
-        }
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
 
-        body {
-            margin: 0;
-            padding: 20px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
-            min-height: 100vh;
-            color: var(--color-text);
-        }
+<style>
+  * {
+    box-sizing: border-box;
+  }
 
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: var(--color-bg);
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            padding: 40px;
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-        }
+  body {
+    margin: 0;
+    background: #f4f6f8;
+    font-family: "Segoe UI", Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
 
-        .header {
-            text-align: center;
-            border-bottom: 2px solid var(--color-border);
-            padding-bottom: 20px;
-        }
+  .card {
+    width: 440px;
+    background: #fff;
+    padding: 24px;
+    border-radius: 10px;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+  }
 
-        .header h1 {
-            margin: 0;
-            font-size: 28px;
-            color: var(--color-primary);
-        }
+  .header {
+    margin-bottom: 18px;
+  }
 
-        .header p {
-            margin: 8px 0 0 0;
-            color: var(--color-text-secondary);
-            font-size: 14px;
-        }
+  .header h2 {
+    margin: 0;
+    color: #007e5a;
+    font-size: 22px;
+  }
 
-        .upload-section {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
+  .header p {
+    margin: 6px 0 0;
+    font-size: 13px;
+    color: #666;
+  }
 
-        .file-input-wrapper {
-            position: relative;
-            display: inline-block;
-            width: 100%;
-        }
+  .section {
+    margin-bottom: 18px;
+  }
 
-        .file-input-wrapper input[type="file"] {
-            display: none;
-        }
+  .upload-box {
+    border: 2px dashed #cfd6dc;
+    border-radius: 8px;
+    height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #444;
+    font-size: 14px;
+    background: #fafafa;
+  }
 
-        .file-input-label {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 20px;
-            border: 2px dashed var(--color-border);
-            border-radius: 8px;
-            background: var(--color-bg-light);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 16px;
-            color: var(--color-text-secondary);
-            font-weight: 500;
-        }
+  .upload-box:hover {
+    border-color: #007e5a;
+    background: #f0fdf8;
+  }
 
-        .file-input-label:hover {
-            border-color: var(--color-primary);
-            background: #f0f8f7;
-        }
+  input[type="file"] {
+    display: none;
+  }
 
-        .file-input-label.active {
-            border-color: var(--color-primary);
-            background: #f0f8f7;
-        }
+  .info-box {
+    background: #e9f4ff;
+    color: #0b4aa2;
+    font-size: 13px;
+    padding: 10px 12px;
+    border-left: 4px solid #1e73ff;
+    border-radius: 4px;
+  }
 
-        .upload-icon {
-            margin-right: 12px;
-            font-size: 24px;
-        }
+  label {
+    font-size: 14px;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 6px;
+  }
 
-        .preview-image {
-            max-width: 100%;
-            max-height: 300px;
-            border-radius: 8px;
-            margin-top: 16px;
-            display: none;
-        }
+  input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #cfd6dc;
+    border-radius: 6px;
+  }
 
-        .preview-image.show {
-            display: block;
-        }
+  button {
+    width: 100%;
+    padding: 11px;
+    background: #007e5a;
+    border: none;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+  }
 
-        .manual-input {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            padding: 16px;
-            background: var(--color-bg-light);
-            border-radius: 8px;
-            border: 1px solid var(--color-border);
-        }
+  button:hover {
+    background: #006449;
+  }
 
-        .manual-input-label {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--color-text);
-        }
+  .result {
+    margin-top: 14px;
+    font-size: 14px;
+  }
 
-        .manual-input input {
-            padding: 12px 16px;
-            border: 1px solid var(--color-border);
-            border-radius: 6px;
-            font-size: 16px;
-            font-family: monospace;
-            letter-spacing: 1px;
-        }
+  .error {
+    color: #d32f2f;
+    font-weight: 600;
+  }
 
-        .manual-input input:focus {
-            outline: none;
-            border-color: var(--color-primary);
-            box-shadow: 0 0 0 3px rgba(0, 128, 105, 0.1);
-        }
-
-        .button-group {
-            display: flex;
-            gap: 12px;
-        }
-
-        button {
-            flex: 1;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary {
-            background: var(--color-primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--color-primary-hover);
-        }
-
-        .btn-primary:disabled {
-            background: #cccccc;
-            cursor: not-allowed;
-        }
-
-        .btn-secondary {
-            background: var(--color-bg-light);
-            color: var(--color-text);
-            border: 1px solid var(--color-border);
-        }
-
-        .btn-secondary:hover {
-            background: #f0f0f0;
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .loading.show {
-            display: block;
-        }
-
-        .spinner {
-            border: 4px solid var(--color-bg-light);
-            border-top: 4px solid var(--color-primary);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 12px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .result-section {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .result-box {
-            padding: 16px;
-            border-radius: 8px;
-            border-left: 4px solid var(--color-primary);
-            background: #f0f8f7;
-        }
-
-        .result-box.error {
-            border-left-color: var(--color-error);
-            background: #ffebee;
-        }
-
-        .result-box.success {
-            border-left-color: var(--color-success);
-            background: #f1f8e9;
-        }
-
-        .result-label {
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: var(--color-text-secondary);
-            margin-bottom: 8px;
-        }
-
-        .result-value {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--color-text);
-            word-break: break-all;
-            font-family: monospace;
-        }
-
-        .extracted-text {
-            padding: 12px;
-            background: white;
-            border-radius: 6px;
-            border: 1px solid var(--color-border);
-            font-size: 14px;
-            color: var(--color-text-secondary);
-            max-height: 150px;
-            overflow-y: auto;
-            margin-top: 12px;
-        }
-
-        .whatsapp-link {
-            display: block;
-            padding: 12px 16px;
-            background: var(--color-primary);
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            text-align: center;
-            font-weight: 600;
-            margin-top: 12px;
-            transition: background 0.3s ease;
-        }
-
-        .whatsapp-link:hover {
-            background: var(--color-primary-hover);
-        }
-
-        .info-message {
-            padding: 12px;
-            background: #e3f2fd;
-            border-left: 4px solid #2196f3;
-            border-radius: 4px;
-            font-size: 14px;
-            color: #0d47a1;
-        }
-
-        .info-message.warning {
-            background: #fff3e0;
-            border-left-color: #ff9800;
-            color: #e65100;
-        }
-
-        .info-message.error {
-            background: #ffebee;
-            border-left-color: #f44336;
-            color: #b71c1c;
-        }
-
-        .copy-btn {
-            padding: 8px 12px;
-            background: var(--color-primary);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-        .copy-btn:hover {
-            background: var(--color-primary-hover);
-        }
-
-        .flex-row {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-    </style>
+  a {
+    color: #25D366;
+    font-weight: 600;
+    word-break: break-all;
+  }
+</style>
 </head>
+
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📱 WhatsApp Number Scanner</h1>
-            <p>Extract phone numbers from images and create WhatsApp links</p>
-        </div>
 
-        <div class="upload-section">
-            <div class="file-input-wrapper">
-                <input type="file" id="imageInput" accept="image/*" />
-                <label for="imageInput" class="file-input-label">
-                    <span class="upload-icon">📷</span>
-                    <span>Click to upload or drag an image</span>
-                </label>
-                <img id="previewImage" class="preview-image" alt="Preview" />
-            </div>
+<div class="card">
 
-            <div class="info-message">
-                💡 Upload an image containing a phone number. The app will extract the number and create a WhatsApp link.
-            </div>
+  <div class="header">
+    <h2>📱 WhatsApp Number Scanner</h2>
+    <p>Extract phone numbers from images and create WhatsApp links</p>
+  </div>
 
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-                <p>Scanning image for phone numbers...</p>
-            </div>
-        </div>
+  <div class="section">
+    <label>Upload image</label>
+    <label class="upload-box">
+      Click to upload or drag an image
+      <input type="file" accept="image/*" onchange="scanImage(this)">
+    </label>
+  </div>
 
-        <div class="manual-input">
-            <label class="manual-input-label">Or enter number manually:</label>
-            <input type="text" id="manualInput" placeholder="Enter phone number (e.g., 9876543210)" />
-            <button class="btn-primary" onclick="processManualInput()">Process Number</button>
-        </div>
-
-        <div id="result" style="display: none;"></div>
+  <div class="section">
+    <div class="info-box">
+      Upload an image containing a phone number. The app will extract the number and create a WhatsApp link.
     </div>
+  </div>
 
-    <script>
-        const imageInput = document.getElementById('imageInput');
-        const previewImage = document.getElementById('previewImage');
-        const loading = document.getElementById('loading');
-        const resultDiv = document.getElementById('result');
-        const fileLabel = document.querySelector('.file-input-label');
-        const manualInput = document.getElementById('manualInput');
+  <div class="section">
+    <label>Or enter number manually:</label>
+    <input type="text" id="manualInput" placeholder="Enter phone number (e.g., 9876543210)">
+  </div>
 
-        imageInput.addEventListener('change', handleImageUpload);
+  <button onclick="processManual()">Process Number</button>
 
-        imageInput.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            fileLabel.classList.add('active');
-        });
+  <div class="result" id="result"></div>
 
-        imageInput.addEventListener('dragleave', () => {
-            fileLabel.classList.remove('active');
-        });
+</div>
 
-        fileLabel.addEventListener('drop', (e) => {
-            e.preventDefault();
-            fileLabel.classList.remove('active');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                imageInput.files = files;
-                handleImageUpload();
-            }
-        });
+<script>
+function normalizeNumber(raw) {
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length === 10) return "91" + digits;
+  if (digits.length === 12) return digits;
+  return null;
+}
 
-        async function handleImageUpload() {
-            const file = imageInput.files[0];
-            if (!file) return;
+function showResult(link) {
+  const result = document.getElementById("result");
+  if (!link) {
+    result.innerHTML = "<span class='error'>Number is not correct</span>";
+    return;
+  }
+  result.innerHTML = `WhatsApp Link:<br><a href="https://wa.me/${link}" target="_blank">https://wa.me/${link}</a>`;
+}
 
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                previewImage.src = e.target.result;
-                previewImage.classList.add('show');
-                extractNumberFromImage(e.target.result);
-            };
-            reader.readAsDataURL(file);
-        }
+function processManual() {
+  const input = document.getElementById("manualInput").value;
+  showResult(normalizeNumber(input));
+}
 
-        async function extractNumberFromImage(imageSrc) {
-            loading.classList.add('show');
-            resultDiv.style.display = 'none';
+function scanImage(input) {
+  const file = input.files[0];
+  if (!file) return;
 
-            try {
-                const { data: { text } } = await Tesseract.recognize(
-                    imageSrc,
-                    'eng',
-                    { logger: m => console.log(m) }
-                );
+  const result = document.getElementById("result");
+  result.innerHTML = "Scanning image…";
 
-                const numbers = text.match(/\d+/g);
-                if (numbers && numbers.length > 0) {
-                    const largestNumber = numbers.reduce((max, curr) => 
-                        curr.length > max.length ? curr : max, '');
-                    processNumber(largestNumber, text);
-                } else {
-                    showResult({
-                        type: 'error',
-                        message: 'No numbers found in the image.',
-                        extracted: text
-                    });
-                }
-            } catch (error) {
-                showResult({
-                    type: 'error',
-                    message: `Error processing image: ${error.message}`,
-                    extracted: ''
-                });
-            } finally {
-                loading.classList.remove('show');
-            }
-        }
+  Tesseract.recognize(file, "eng")
+    .then(({ data: { text } }) => showResult(normalizeNumber(text)))
+    .catch(() => result.innerHTML = "<span class='error'>Scan failed</span>");
+}
+</script>
 
-        function processManualInput() {
-            const number = manualInput.value.trim();
-            if (!number) {
-                showResult({
-                    type: 'error',
-                    message: 'Please enter a phone number.'
-                });
-                return;
-            }
-            processNumber(number, number);
-        }
-
-        function processNumber(number, extracted = '') {
-            const digitCount = number.replace(/\D/g, '').length;
-
-            if (digitCount === 10) {
-                const whatsappNumber = '91' + number;
-                createWhatsAppLink(whatsappNumber, 'success', `Added country code 91. Phone: ${whatsappNumber}`);
-            } else if (digitCount === 12) {
-                createWhatsAppLink(number, 'success', `Phone: ${number}`);
-            } else if (digitCount > 12) {
-                showResult({
-                    type: 'error',
-                    message: '❌ Number is incorrect.',
-                    details: `The extracted number has ${digitCount} digits, but it should have 10 or 12 digits.`,
-                    extracted: extracted
-                });
-            } else {
-                showResult({
-                    type: 'error',
-                    message: '❌ Number is incorrect.',
-                    details: `The extracted number has ${digitCount} digits, but it should have 10 or 12 digits.`,
-                    extracted: extracted
-                });
-            }
-        }
-
-        function createWhatsAppLink(whatsappNumber, type, message) {
-            const whatsappUrl = `https://wa.me/${whatsappNumber}`;
-            showResult({
-                type: type,
-                message: '✅ ' + message,
-                whatsappLink: whatsappUrl,
-                whatsappNumber: whatsappNumber
-            });
-        }
-
-        function showResult(result) {
-            resultDiv.innerHTML = '';
-
-            if (result.type === 'success') {
-                resultDiv.innerHTML += `<div class="result-box success">
-                    <div class="result-label">✓ Success</div>
-                    <div class="result-value">${result.message}</div>
-                </div>`;
-
-                resultDiv.innerHTML += `<div class="result-box">
-                    <div class="result-label">WhatsApp Link</div>
-                    <div class="flex-row">
-                        <input type="text" style="flex: 1; padding: 10px; border: 1px solid var(--color-border); border-radius: 4px; font-size: 14px; font-family: monospace;" value="${result.whatsappLink}" readonly />
-                        <button class="copy-btn" onclick="copyToClipboard('${result.whatsappLink}')">Copy</button>
-                    </div>
-                    <a href="${result.whatsappLink}" class="whatsapp-link" target="_blank">
-                        Open in WhatsApp →
-                    </a>
-                </div>`;
-            } else {
-                resultDiv.innerHTML += `<div class="result-box error">
-                    <div class="result-label">✗ Error</div>
-                    <div class="result-value">${result.message}</div>
-                </div>`;
-
-                if (result.details) {
-                    resultDiv.innerHTML += `<div class="info-message error">${result.details}</div>`;
-                }
-
-                if (result.extracted) {
-                    resultDiv.innerHTML += `<div class="result-box">
-                        <div class="result-label">Extracted Text</div>
-                        <div class="extracted-text">${escapeHtml(result.extracted)}</div>
-                    </div>`;
-                }
-            }
-
-            resultDiv.style.display = 'flex';
-            resultDiv.classList.add('result-section');
-        }
-
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                alert('Link copied to clipboard!');
-            }).catch(err => {
-                console.error('Failed to copy:', err);
-            });
-        }
-
-        function escapeHtml(text) {
-            const map = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            };
-            return text.replace(/[&<>"']/g, m => map[m]);
-        }
-
-        manualInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                processManualInput();
-            }
-        });
-    </script>
 </body>
 </html>
